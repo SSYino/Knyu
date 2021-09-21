@@ -1,17 +1,18 @@
 calculator (try fetch calc api)
 implement timer, countdown                              
 user authorization on server join (6/13, 6/14)
-make command to remove bot role for me to debug the bot and change stuff //
 make ;help command
 alexa play despacito / unravel
-can change nickname even if there is nickstatus
-on nickname change event -> update database with real nickname
-check case bot cant send messages
+check case bot cant send messages                                       //
 bulk delete -> check case delete msg older than 14 days (fetch message and delete 1 by 1) (maybe make delay)
 bulk delete -> if delete > 30 msgs ask if user wants to recreate channel instead
-check join and leave commands to only be used when user in same vc
+⬆➡ make recreate channel command
+check join and leave commands to only be used when user in same vc (actually rewrite join and leave commands)      //
+allow user to spam song requests and handle all queue add events properly without skipping a song
+change code to send message instead of edit last interaction if user added queue with ;p after previously using /play
 
 STUDY INTERACTIONS AND EMBEDS TO CREATE EMBEDS AND POSSIBLY BUTTONS             //
+make other voice commands                                                   //
 
 musics: bass&speed
 photos: randomization
@@ -21,4 +22,5 @@ mini-game links?
 
 Discord Voice:
     make bot play music quicker
-    ;seek
+    make queue into many pages in case its too long
+    discord player seek command fucking sucks

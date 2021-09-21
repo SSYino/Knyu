@@ -8,9 +8,12 @@ generator client {
 }
 
 model Guild {
-  id      String      @id
-  name    String      @db.VarChar(255)
-  members GuildUser[]
+  id               String      @id
+  name             String      @db.VarChar(255)
+  isBotInDebugMode Boolean     @default(false)
+  clientRolesName  String[]
+  clientRolesId    String[]
+  members          GuildUser[]
 }
 
 model GuildUser {

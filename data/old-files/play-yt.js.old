@@ -1,0 +1,209 @@
+const { OpusEncoder } = require('@discordjs/opus');
+const ffmpeg = require('ffmpeg-static');
+const ytdl = require('ytdl-core-discord');
+const sodium = require('libsodium-wrappers')
+const { join } = require("path")
+const { NoSubscriberBehavior, createAudioPlayer, createAudioResource } = require("@discordjs/voice");
+const { Player } = require("discord-player")
+
+// const getInfo = ytdl.getInfo;
+
+module.exports = async function (arguments) {
+    let command = '';
+    let msg;
+    let args = [];
+    const interaction = arguments.interaction;
+    if (interaction) {
+        command = interaction.commandName;
+        msg = interaction;
+        args = interaction.options.get('song').value.split(' ');
+    }
+    else {
+        command = arguments.command;
+        msg = arguments.msg;
+        args = arguments.args;
+    }
+    // const client = arguments.client;
+    const player = arguments.player
+    let queue = player.getQueue(msg.member.guild.id);
+
+    if (command === 'play' || command === 'p') {
+        try {
+            if (!msg.member.voice.channelId) return await msg.reply("You are not in a voice channel!");
+            if (msg.member.guild.me.voice.channelId && msg.member.voice.channelId !== msg.member.guild.me.voice.channelId) return await msg.reply("We are not in the same voice channel!");
+            if (!args.length) return await msg.reply(`❌ | Please provide a track to play.`);
+
+            // const player = new Player(client);
+            let URLPositionInArgs = null;
+            // const player = createAudioPlayer({
+            //     behaviors: {
+            //         noSubscriber: NoSubscriberBehavior.Pause,
+            //     }
+            // })
+            // const resource = createAudioResource(ytdl(args.join('')), {
+            //     metadata: {
+            //         title: getInfo(args.join('')),
+            //     }
+            // });
+
+            // player.on('error', error => {
+            //     console.error(`Error: ${error.message} with resource ${error.resource.metadata.title}`);
+            // });
+            // player.on('error', (queue, error) => {
+            //     console.error(`Error: ${error.name}\n${error.message}\nQueue: ${queue.id}`);
+            // });
+            // player.on("connectionError", (queue, err) => {
+            //     console.error(`Error: ${err.name}\n${err.message}\nQueue: ${queue.id}`);
+            // })
+            // player.on('error', error => {
+            //     throw (JSON.stringify(error));
+            // });
+            // player.on("trackAdd", async (queue, track) => {
+            //     // if (!queue.playing) await queue.play();
+            //     // if (track === queue.current) queue.play()
+            //     // else if (interaction) interaction.editReply({content: `✅ | Track **${track.title}** added to queue!`, ephemeral: true})
+            //     // else msg.reply(`✅ | Track **${track.title}** added to queue!`)
+            // })
+            // // player.on("tracksAdd", (queue, tracks) => {
+            // //     queue.metadata.channel.send('a lot')
+            // //     if (tracks[0] === queue.current) queue.play()
+            // //     else if (interaction) interaction.editReply({content: `⭕ | **${track.title}** has ended!`, ephemeral: true})
+            // // })
+            // player.on("trackStart", (queue, track) => {
+            //     if (interaction) interaction.reply({ content: `🎶 | Now playing **${track.title}**!`, ephemeral: true });
+            //     else queue.metadata.channel.send(`🎶 | Now playing **${track.title}**!`);
+            // })
+            // // player.on("trackEnd", (queue) => {
+            // //     if (queue.current) {
+            // //         queue.play()
+            // //     }
+            // // })
+            // player.on("queueEnd", queue => {
+            //     console.log(`Queue id:${queue.id} --> has ended`)
+            //     if (interaction) interaction.followUp('Queue has ended!');
+            //     else queue.metadata.channel.send('Queue has ended!');
+            // })
+
+            // connection.on('stateChange', (oldState, newState) => {
+            //     console.log(`Connection transitioned from ${oldState.status} to ${newState.status}`);
+            // });
+            // player.on('stateChange', (oldState, newState) => {
+            //     console.log(`Player transitioned from ${oldState.status} to ${newState.status}`);
+            // });
+            const hasURL = args.some((val, index) => {
+                if (ytdl.validateURL(val)) {
+                    URLPositionInArgs = index;
+                    return true;
+                }
+            })
+            let query = args.join(' ');
+
+            if (!queue) {
+                // console.log('no queue')
+                
+                
+                player.on("botDisconnect", queue => {
+                    player.deleteQueue(queue.guild.id);
+                })
+                player.on("trackAdd", async (queue, track) => {
+                    // if (!queue.playing) await queue.play();
+                    // if (track === queue.current) queue.play()
+                    // else if (interaction) interaction.editReply({content: `✅ | Track **${track.title}** added to queue!`, ephemeral: true})
+                    // else msg.reply(`✅ | Track **${track.title}** added to queue!`)
+                })
+                // player.on("tracksAdd", (queue, tracks) => {
+                //     queue.metadata.channel.send('a lot')
+                //     if (tracks[0] === queue.current) queue.play()
+                //     else if (interaction) interaction.editReply({content: `⭕ | **${track.title}** has ended!`, ephemeral: true})
+                // })
+                player.on("trackStart", (queue, track) => {
+                    if (interaction) interaction.reply({ content: `🎶 | Now playing **${track.title}**!`, ephemeral: true });
+                    else queue.metadata.channel.send(`🎶 | Now playing **${track.title}**!`);
+                })
+                // player.on("trackEnd", (queue) => {
+                //     if (queue.current) {
+                //         queue.play()
+                //     }
+                // })
+                player.on("queueEnd", queue => {
+                    // console.log(`Queue id:${queue.id} --> has ended`)
+                    if (interaction) interaction.followUp('Queue has ended!');
+                    else queue.metadata.channel.send('Queue has ended!');
+                })
+                
+                queue = player.createQueue(msg.member.guild, {
+                    metadata: {
+                        channel: msg.channel
+                    },
+                    leaveOnEnd: false,
+                    leaveOnEmpty: false,
+                    ytdlOptions: {
+                        filter: 'audioonly',
+                        // liveBuffer: 20000,
+                        quality: 'highestaudio',
+                        highWaterMark: 15625 << 13 //128MB
+                    },
+                    bufferingTimeout: 0
+                });
+            }
+            else {
+                // console.log('already')
+
+
+            }
+
+            // verify vc connection
+            try {
+                if (!queue.connection) await queue.connect(msg.member.voice.channel);
+            } catch {
+                await msg.reply("Could not join your voice channel!");
+                try {
+                    return queue.destroy();
+                } catch { return console.log("Could not destroy queue!") }
+            }
+
+            if (interaction) {
+                await msg.deferReply({ ephemeral: true });
+            }
+            if (hasURL) {
+                query = args[URLPositionInArgs];
+            }
+
+            // const test =  []
+            // for (const i in args) {
+            //     const track = await player.search(args[i], {
+            //         requestedBy: msg.member.user.tag
+            //     }).then(x => x.tracks[0])
+            //     test.push(track)
+            // }
+            const track = await player.search(query, {
+                requestedBy: msg.member.user.tag
+            }).then(x => x.tracks[0])
+
+            if (!track) {
+                if (interaction) return await msg.editReply(`❌ | Track **${query}** not found!`);
+                msg.reply(`❌ | Track **${query}** not found!`)
+            }
+            // console.log(test)
+            queue.addTrack(track)
+            if (interaction) interaction.editReply({ content: `✅ | Track **${track.title}** added to queue!`, ephemeral: true })
+            else msg.reply(`✅ | Track **${track.title}** added to queue!`)
+            // queue.addTracks(test)
+            // queue.play(track);
+            if (!queue.playing) queue.play();
+
+            // connection.subscribe(player);
+            // player.play(resource);
+        } catch (err) {
+            if (interaction) msg.followUp("Error: Failed to play song.")
+            else msg.channel.send("Error: Failed to play song.")
+            console.error(err.name);
+        }
+    }
+    else if (command === 'stop') {
+
+    }
+    else if (command === 'skip' || command === 'fs') {
+
+    }
+}
