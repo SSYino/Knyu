@@ -1,0 +1,36 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Guild {
+  id      String      @id
+  name    String      @db.VarChar(255)
+  members GuildUser[]
+}
+
+model GuildUser {
+  id              Int     @default(autoincrement())
+  guild           Guild   @relation(fields: [guild_id], references: [id])
+  user            User    @relation(fields: [user_id], references: [id])
+  guild_id        String
+  user_id         String
+  username        String
+  nickname        String?
+  nickname_status String?
+  isAFK           Boolean @default(false)
+
+  @@id([guild_id, user_id])
+  @@map("_UserOnGuild")
+}
+
+model User {
+  id       String      @id
+  username String
+  tag      String      @unique
+  guilds   GuildUser[]
+}
