@@ -1,0 +1,28 @@
+module.exports = (msg,args,Interactions,fs,userId) => {
+    const oldNick = msg.member.nickname;
+    const newNick = args.join(' ')
+    if (newNick.length > 32) {Interactions.send("The Nickname Provided Was Too Long. ( Max: 32 characters )"); return}
+    if (/\[.*\]$/.test(oldNick)) {
+        const db = JSON.parse(fs.readFileSync('./data/member-nicknames.json'));
+        if (db[msg.guild.id].guildMembers[userId].useStatus) {
+            Interactions.reply('Please clear your nickname status using ;rs first.');
+            return;
+        } else console.log('False Alarm')
+    }
+    msg.member.setNickname(newNick);
+
+    if (!args.length && !oldNick) {Interactions.send('Please provide a nickname to change to.'); return}
+    else if(!args.length && oldNick) {
+        Interactions.send(`${msg.author.username} cleared their nickname from "${oldNick}"`);
+        console.log(`-----------------------\n${msg.author.username} cleared their nickname\nPrevious Nickname = ${oldNick}\n-----------------------`);
+    }
+    else if (!oldNick) {
+        console.log(`${msg.author.username} set their nickname to "${newNick}"`)
+    }
+    else {
+        Interactions.send(`${msg.author.username}'s nickname was changed from "${oldNick}"`);
+        console.log(`${msg.author.username} changed their nickname from "${oldNick}" to ${newNick}`)
+    }
+
+    msg.delete().then(() => {}).catch(console.error);
+}

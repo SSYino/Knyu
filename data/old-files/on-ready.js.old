@@ -1,0 +1,130 @@
+const { User } = require("discord.js");
+const nickStatus = require("./commands/nick-status");
+
+module.exports = function(client,fs) {
+    const cacheData = Object.fromEntries(client.guilds.cache);
+    const newCacheData = {};
+    const dbData = JSON.parse(fs.readFileSync('./data/member-nicknames.json'))
+    const newDbData = Object.assign({}, dbData);
+
+    //Reformat member cache data
+    //Update Database data with new guilds or new member joins
+    for (const guildId in cacheData) {
+        const membersMap = cacheData[guildId].members.cache
+        const membersObj = {}
+        membersMap.forEach((member, userId) => {
+            membersObj[userId] = {
+                "nickname": member.nickname,
+                "tag": member.user.tag,
+                "useStatus": false
+            };
+        })
+        newCacheData[guildId] = {
+            "guildName": cacheData[guildId].name,
+            "guildMembers": membersObj
+        }
+        //Add new Guild that client joined (if any) to newDbData
+        if (!newDbData.hasOwnProperty(guildId)) {
+            newDbData[guildId] = newCacheData[guildId]
+        }
+        //Remove Guild that client left (if any) from newDbData
+        for (const _guildId in newDbData) {
+            if (!newCacheData.hasOwnProperty(_guildId)) {
+                delete newDbData[_guildId]
+            }
+        }
+        //Add newly joined Guildmember (if any) to newDbData
+        for (const memberId in membersObj) {
+            if (!newDbData[guildId].guildMembers.hasOwnProperty(memberId)) {
+                newDbData[guildId].guildMembers[memberId] = 
+                newCacheData[guildId].guildMembers[memberId];
+            }
+        }
+        //Remove member that left Guild from newDbData
+        for (const _memberId in newDbData[guildId].guildMembers) {
+            if (!membersObj[_memberId]) {
+                delete newDbData[guildId].guildMembers[_memberId];
+            }
+        }
+    }
+    
+    //make information of nickname-status usage to be static
+    const finalJson = Object.assign({}, newCacheData);
+    for (const guildId in newDbData) {
+        const members = newDbData[guildId].guildMembers;
+        for (const memberId in members) {
+            if (members[memberId].useStatus) {
+                const userInfo = newDbData[guildId].guildMembers[memberId];
+                finalJson[guildId].guildMembers[memberId].nickname = userInfo.nickname
+                finalJson[guildId].guildMembers[memberId].useStatus = true;
+                finalJson[guildId].guildMembers[memberId].nickStatus = userInfo.nickStatus;
+            }
+        }
+    }
+
+    fs.writeFileSync('./data/member-nicknames.json',JSON.stringify(finalJson,null,2))
+
+    // console.log(newCacheData["729375436609683516"])
+    // if (!newDbData[guildId].guildMembers.hasOwnProperty(userId)) {
+    //     console.log('none')
+    // }
+    // console.log(newCacheData['729375436609683516'])
+    // return;
+    // const newDbData = Object.assign({}, dbData)
+    // //Fill newDbData with Is User using nickname status?
+    // for (const guildId in dbData) {
+    //     const membersObj = dbData[guildId].guildMembers
+    //     for (const memberId in membersObj) {
+    //         let isUsingNickStatus = membersObj[memberId].useStatus
+    //         isUsingNickStatus = isUsingNickStatus ?? false
+            
+    //         if (!isUsingNickStatus) {
+    //             newDbData[guildId].guildMembers[memberId] = newCacheData[guildId].guildMembers[memberId]
+    //         }
+    //         else {
+    //             const user = newDbData[guildId].guildMembers[memberId];
+    //             const nicknameStatus = user.nickStatus;
+    //             newDbData[guildId].guildMembers[memberId] = newCacheData[guildId].guildMembers[memberId]
+    //             user[useStatus] = isUsingNickStatus;
+    //             user[nickStatus] = nicknameStatus;
+    //         }
+    //     }
+    // }
+
+    // console.log(dbData)
+    // console.log(dbData['729375436609683516'])
+
+    // for (const i in dbObj) {
+    //     dbData[i] = {useStatus: dbObj[i].useStatus}
+    // }
+
+    // //Fill cacheData with User info from discord cache
+    // for (const i of users) {
+    //     //Is User in cache not in db
+    //     if (!dbData[i[0]]) {
+    //         //Add using nickname status to user in db
+    //         dbData[i[0]] = {useStatus: false}
+    //     }
+
+    //     //Is User using nickname status?
+    //     if (dbData[i[0]].useStatus) {
+    //         cacheData[i[0]] = {
+    //             nickname: dbObj[i[0]].nickname,
+    //             tag: i[1].user.tag,
+    //             useStatus: dbData[i[0]].useStatus,
+    //             nickStatus: dbObj[i[0]].nickStatus
+    //         }
+    //     } else {
+    //         cacheData[i[0]] = {
+    //         nickname: i[1].nickname,
+    //         tag: i[1].user.tag,
+    //         useStatus: dbData[i[0]].useStatus
+    //         }
+    //     }
+
+    //     //Prepare final JSON to update db
+        
+    // }
+
+    // fs.writeFileSync('./data/member-nicknames.json',JSON.stringify(cacheData,null,2))
+}

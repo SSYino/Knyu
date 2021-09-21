@@ -7,6 +7,7 @@ const playYt = require("./commands/play-yt.js");
 const connection = require("./commands/voice-connection.js");
 const bulkDelete = require("./commands/bulk-delete.js");
 const playFromFile = require("./commands/play-from-file.js")
+const botDebug = require("./commands/bot-debug.js")
 
 const Commands = {
     setNickname,
@@ -16,8 +17,10 @@ const Commands = {
     connection,
     bulkDelete,
     playFromFile,
+    botDebug
 }
 const AFKKeywords = ['afk', 'fak', 'akf', 'afl', 'sfk', 'adk', 'agk'];
+const VoiceCommands = ['play', 'p', 'stop', 'skip', 'fs', 'clear', 'join', 'leave', 'queue', 'q', 'nowplaying', 'np', 'destroy', 'remove', 'rem', 'seek', 'pause', 'shuffle', 'repeat', 'rep'];
 
 module.exports = {
     async msgCheck(msg, prisma, client, player) {
@@ -35,6 +38,10 @@ module.exports = {
 
         if (AFKKeywords.includes(command)) {
             Commands.afk(msg, Commands.setNickStatus, Interactions, userId, prisma, client);
+            return;
+        }
+        if (VoiceCommands.includes(command)) {
+            Commands.playYt({ command, msg, args, client, player });
             return;
         }
         switch (command) {
@@ -57,22 +64,25 @@ module.exports = {
             case 'del':
                 Commands.bulkDelete(msg, args, client);
                 break;
-            case 'play':
-            case 'p':
-            case 'stop':
-            case 'skip':
-            case 'fs':
-                await Commands.playYt({command, msg, args, client, player});
-                break;
-            case 'join':
-            case 'leave':
-                Commands.connection(msg, command); //FIX THIS---------------------------------
-                break;
+            // case 'play':
+            // case 'p':
+            // case 'stop':
+            // case 'skip':
+            // case 'fs':
+            //     await Commands.playYt({ command, msg, args, client, player });
+            //     break;
+            // case 'join':
+            // case 'leave':
+            //     Commands.connection(msg, command); //FIX THIS---------------------------------
+            //     break;
             case 'pff':
                 Commands.playFromFile(msg, args, client);
                 break;
             case 'deploy':
                 slashCommands(msg, client);
+                break;
+            case 'manage':
+                botDebug(msg, prisma);
                 break;
             default:
                 Interactions.send('That Command does not exist.')

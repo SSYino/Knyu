@@ -159,7 +159,7 @@ module.exports = async (command, msg, args, Interactions, client, prismaOld) => 
                     skippedGuildsId.push(member.guild.id)
                     continue
                 }
-                const userNicknameObj = await prisma.guildUser.findFirst({
+                let userNicknameObj = await prisma.guildUser.findFirst({
                     where: {
                         guild_id: member.guild.id,
                         user_id: member.user.id
@@ -169,16 +169,23 @@ module.exports = async (command, msg, args, Interactions, client, prismaOld) => 
                     }
                 })
                 if (!userNicknameObj) {
-                    return console.error(`userNicknameObj is null`);
+                    const newUserNicknameObj = await prisma.guildUser.create({
+                        data: {
+                            guild: {
+                                connect: {id: member.guild.id}
+                            },
+                            user: {
+                                connect: {id: member.id}
+                            },
+                            username: member.user.username,
+                            nickname: member.nickname,
+                            nickname_status: nickStatus
+                        },
+                    })
+
+                    userNicknameObj = newUserNicknameObj;
                 }
-                if (!userNicknameObj.nickname) {
-                    member.setNickname(`${msg.member.user.username} [${nickStatus}]`)
-                    // else {
-                    //     msg.reply("Could not update nickname status\nError: Database data not up-to-date")
-                    //     console.error("User has nickname in guild, but nickname for that guild does not appear in db");
-                    //     return;
-                    // }
-                }
+                if (!userNicknameObj.nickname) member.setNickname(`${msg.member.user.username} [${nickStatus}]`)
                 else member.setNickname(`${userNicknameObj.nickname} [${nickStatus}]`);
             }
             //Argument passed as nickname status IS "AFK"
