@@ -9,9 +9,7 @@ module.exports = async function (client, prisma) {
         clientGuilds.forEach(guild => {
             guildData.push({
                 id: guild.id,
-                name: guild.name,
-                clientRolesId: guild.members.cache.get(process.env.KNYU_UUID).roles.cache.map(role => role.id),
-                clientRolesName: guild.members.cache.get(process.env.KNYU_UUID).roles.cache.map(role => role.name)
+                name: guild.name
             })
         })
         

@@ -7,7 +7,6 @@ const playYt = require("./commands/play-yt.js");
 const connection = require("./commands/voice-connection.js");
 const bulkDelete = require("./commands/bulk-delete.js");
 const playFromFile = require("./commands/play-from-file.js")
-const botDebug = require("./commands/bot-debug.js")
 
 const Commands = {
     setNickname,
@@ -16,8 +15,7 @@ const Commands = {
     playYt,
     connection,
     bulkDelete,
-    playFromFile,
-    botDebug
+    playFromFile
 }
 const AFKKeywords = ['afk', 'fak', 'akf', 'afl', 'sfk', 'adk', 'agk'];
 const VoiceCommands = ['play', 'p', 'stop', 'skip', 'fs', 'clear', 'join', 'leave', 'queue', 'q', 'nowplaying', 'np', 'destroy', 'remove', 'rem', 'seek', 'pause', 'shuffle', 'repeat', 'rep'];
@@ -80,9 +78,6 @@ module.exports = {
                 break;
             case 'deploy':
                 slashCommands(msg, client);
-                break;
-            case 'manage':
-                botDebug(msg, prisma);
                 break;
             default:
                 Interactions.send('That Command does not exist.')
