@@ -95,9 +95,6 @@ module.exports = async function (arguments) {
                     return res.playlist.tracks;
                 } else return res.tracks[0]
             })
-            // console.log(msg.user, 'undef')
-            // console.log(msg.member.user, 'user')
-            // console.log(track, 'teracj')
             if (!isTrackAcceptable) {
                 msg.reply("Cannot add playlists longer than 50 tracks (for now)");
                 return;
@@ -209,11 +206,7 @@ module.exports = async function (arguments) {
     }
     else if (command === 'pause') {
         if (!queue?.current) return msg.reply("No Song Currently Playing")
-        
-        // setTimeout(() => {queue.setPaused(); console.log(1)},2000)
-        // setTimeout(() => {queue.setPaused(); console.log(2)},2000)
-        // setTimeout(() => {queue.setPaused(); console.log(3)},2000)
-        // setTimeout(() => {queue.setPaused(); console.log(4)},2000)
+
         const isPaused = queue.setPaused();
         if (isPaused) {
             console.log(isPaused, 'inif')
@@ -226,8 +219,9 @@ module.exports = async function (arguments) {
         }
     }
     else if (command === 'seek') { //Seek command fucking sucks
+        return msg.reply("**🚧 | Seek Command Under Heavy Construction!**")
         // if (!queue?.current) return msg.reply("No Song Currently Playing")
-        
+
         // try {
         //     const didSeek = await queue.seek(args.join(' '));
         //     console.log(didSeek);
@@ -237,13 +231,100 @@ module.exports = async function (arguments) {
         // }
     }
     else if (command === 'shuffle') {
+        if (!queue) return msg.reply("No Queue Exists")
+        if (queue.tracks.length === 0) return msg.reply("No songs in queue\nAdd more songs with `;play` `;p` or try private slash commands `/play`")
+        if (queue.tracks.length === 1) return msg.reply("Only 1 song exists in the queue\nShuffle command has no effect\nShuffle command requires at least 3 songs in queue")
+        if (queue.tracks.length < 3) return msg.reply("Not enough songs in queue\nShuffle command requires at least 3 songs in queue")
 
+        const shuffled = queue.shuffle()
+        if (shuffled) {
+            const shuffleMsg = "Shuffled Queue" + `\nFirst song in queue (LOCKED): **${queue.tracks[0].title}**` +
+                `\nSecond song in queue: **${queue.tracks[1].title}**`
+
+            return msg.reply(shuffleMsg)
+        }
+        else return msg.reply("Failed To Shuffle Queue")
     }
     else if (command === 'destroy') {
+        if (!queue) return msg.reply("No Queue Available To Destroy");
 
+        const destroy = (bool) => {
+            if (!queue.destroyed) {
+                queue.metadata.stopped = true;
+                queue.destroy(bool);
+                return msg.reply("Destroyed Queue");
+            }
+            else return msg.reply("Queue was already destroyed")
+        }
+
+        if (!queue.connection) {
+            destroy(false)
+        }
+        else {
+            if (!msg.member.voice.channelId) return msg.reply("You are not in my voice channel!");
+            if (msg.member.guild.me.voice.channelId && msg.member.voice.channelId !== msg.member.guild.me.voice.channelId) return await msg.reply("We are not in the same voice channel!");
+
+            destroy(true)
+        }
     }
-    else if (command === 'repeat') {
+    else if (command === 'repeat' || command === 'rep') {
+        if (!queue) return msg.reply("No Queue Exists")
+        if (!args.length) {
+            if (queue.repeatMode === 0) {
+                const repeatModeMsg = "Please specify the repeat mode" + "\n`;repeat this` to only repeat the current song **or**" +
+                "\n`;repeat all` to repeat the whole queue **or**" + "\n`;repeat off` to disable Repeat Mode" + "\n\nYou could also do `;repeat mode` to check current Repeat Mode"
 
+                return msg.reply(repeatModeMsg);
+            }
+            else {
+                const setMode = queue.setRepeatMode(0);
+
+                if (setMode) return msg.reply("Repeat Mode Disabled")
+                else return msg.reply("Failed to disable Repeat mode")
+            }
+        }
+        if (args.length > 1) return msg.reply("Please specify only the repeat mode" + "\n`;repeat this` to only repeat the current song **or**" +
+        "\n`;repeat all` to repeat the whole queue **or**" + "\n`;repeat off` to disable Repeat Mode" + "\n\nYou could also do `;repeat mode` to check current Repeat Mode");
+
+        //RepeatModes ['OFF', 'TRACK', 'QUEUE', (DEPRECATED) 'AUTOPLAY'];
+        const RepeatModes = {
+            'OFF': 0,
+            'THIS': 1,
+            'ALL': 2,
+            'MODE': 99
+        }
+        const RepeatModes2 = {
+            '0': 'OFF',
+            '1': 'THIS',
+            '2': 'ALL'
+        }
+
+        if (!Object.keys(RepeatModes).includes(args[0].toUpperCase())) return msg.reply(`**${args[0]}** is not a valid Repeat Mode\nRepeat Modes: **this**, **all**, **off**, **mode**`)
+        if (args[0].toUpperCase() === 'THIS') {
+            if (queue.repeatMode === 1) return msg.reply("Repeat Mode was already enabled for this song")
+            const repeated = queue.setRepeatMode(1);
+
+            if (repeated) return msg.reply("Now Repeating Current Song")
+            else return msg.reply("Failed to repeat current song")
+        }
+        else if (args[0].toUpperCase() === 'ALL') {
+            if (queue.repeatMode === 2) return msg.reply("Repeat Mode was already enabled for the queue")
+            const repeated = queue.setRepeatMode(2);
+
+            if (repeated) return msg.reply("Now Repeating the whole queue")
+            else return msg.reply("Failed to repeat the whole queue")
+        }
+        else if (args[0].toUpperCase() === 'OFF') {
+            if (queue.repeatMode === 0) return msg.reply("Repeat Mode was already disabled")
+            const repeated = queue.setRepeatMode(0);
+
+            if (repeated) return msg.reply("Repeat Mode is now disabled")
+            else return msg.reply("Failed to repeat current song")
+        }
+        else if (args[0].toUpperCase() === 'MODE') {
+            return msg.reply(`Current Repeat Mode is: **${RepeatModes2[queue.repeatMode]}**`)
+        }
+        else return msg.reply(`Unknown Repeat Mode **${args[0]}**`)
     }
     else {
         msg.reply("Unknown Command")

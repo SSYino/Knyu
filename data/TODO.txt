@@ -23,4 +23,6 @@ mini-game links?
 Discord Voice:
     make bot play music quicker
     make queue into many pages in case its too long
+    now playing says its playing the next song instead of the current song if user uses command too quickly (before or just about the same time the song starts)
+    using ;q says no songs to display if used right after skipping a song
     discord player seek command fucking sucks

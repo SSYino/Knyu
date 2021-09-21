@@ -20,7 +20,7 @@ const Commands = {
     botDebug
 }
 const AFKKeywords = ['afk', 'fak', 'akf', 'afl', 'sfk', 'adk', 'agk'];
-const VoiceCommands = ['play', 'p', 'stop', 'skip', 'fs', 'clear', 'join', 'leave', 'queue', 'q', 'nowplaying', 'np', 'destroy', 'remove', 'rem', 'seek', 'pause', 'shuffle', 'repeat'];
+const VoiceCommands = ['play', 'p', 'stop', 'skip', 'fs', 'clear', 'join', 'leave', 'queue', 'q', 'nowplaying', 'np', 'destroy', 'remove', 'rem', 'seek', 'pause', 'shuffle', 'repeat', 'rep'];
 
 module.exports = {
     async msgCheck(msg, prisma, client, player) {
