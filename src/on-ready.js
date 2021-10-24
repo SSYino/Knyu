@@ -9,8 +9,8 @@ module.exports = async function (client, prisma) {
 
         for (const guild of clientGuilds) {
             guildData.push({
-                id: guild.id,
-                name: guild.name
+                id: guild[1].id,
+                name: guild[1].name
             })
         }
 
@@ -21,7 +21,7 @@ module.exports = async function (client, prisma) {
     else {
 
         for (const guild of clientGuilds) {
-            guildsInDiscordCache.push(guild.id)
+            guildsInDiscordCache.push(guild[1].id)
         }
 
         for (let guild of guildsDb) {
