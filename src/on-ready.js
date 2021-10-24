@@ -6,30 +6,36 @@ module.exports = async function (client, prisma) {
     let guildData = [];
 
     if (!guildsDb.length) {
-        clientGuilds.forEach(guild => {
+
+        for (const guild of clientGuilds) {
             guildData.push({
-                id: guild.id,
-                name: guild.name
+                id: guild[1].id,
+                name: guild[1].name
             })
-        })
-        
+        }
+
         await prisma.guild.createMany({
             data: guildData
         })
     }
     else {
-        clientGuilds.forEach(guild => {
-            guildsInDiscordCache.push(guild.id)
-        })
-        for (let guild of guildsDb) {
+
+        for (const guild of clientGuilds) {
+            guildsInDiscordCache.push(guild[1].id)
+        }
+
+        for (const guild of guildsDb) {
+            console.log(guild.id)
             guildIdsInDatabase.push(guild.id)
         }
 
         for (const cachedGuildId of guildsInDiscordCache) {
             if (!guildIdsInDatabase.includes(cachedGuildId)) {
                 await prisma.guild.create({
-                    id: cachedGuildId,
-                    name: clientGuilds.get(cachedGuildId).name
+                    data: {
+                        id: cachedGuildId,
+                        name: clientGuilds.get(cachedGuildId).name
+                    }
                 })
             }
         }
