@@ -138,10 +138,13 @@ module.exports = (player) => {
                         await newQueue.addTrack(_queueClone.current);
 
                     else if(_queueClone.previousTracks.length !== 0) {
+                        let n = 0;
                         for(let song of _queueClone.previousTracks) {
+                            if(n >= 2) return;
                             if(seenIDs.includes(song.id)) continue;
                             await newQueue.addTrack(song);
                             seenIDs.push(song.id);
+                            n++;
                         }
                     }
                         
@@ -167,6 +170,8 @@ module.exports = (player) => {
                                 if(result === true) {
                                     newQueue.metadata.channel.send(`⌛ | Restoring original position, hang on!`);
                                     console.log('Restarted queue');
+
+                                    newQueue.setRepeatMode(_queueClone.repeatMode);
                                     clearInterval(temp_seek);
                                     
                                 }
@@ -183,8 +188,10 @@ module.exports = (player) => {
                             
                         }, 5000);
                     }
-                    else
+                    else {
+                        newQueue.setRepeatMode(_queueClone.repeatMode);
                         console.log('Restarted queue');
+                    }
                 }, 1500)
                 
             }
