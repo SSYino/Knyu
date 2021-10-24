@@ -19,9 +19,11 @@ module.exports = async function (client, prisma) {
         })
     }
     else {
-        clientGuilds.forEach(guild => {
+
+        for (const guild of clientGuilds) {
             guildsInDiscordCache.push(guild.id)
-        })
+        }
+
         for (let guild of guildsDb) {
             guildIdsInDatabase.push(guild.id)
         }
