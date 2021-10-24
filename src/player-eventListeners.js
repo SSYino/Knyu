@@ -159,7 +159,7 @@ module.exports = (player) => {
                             try {
                                 
                                 if(newQueue.destroyed)
-                                    throw('the fuck?');
+                                    throw new Error('the fuck?');
 
                                 let result = await newQueue.seek(_currentTime);
                                 if(result === false) return;
