@@ -25,7 +25,6 @@ module.exports = async function (client, prisma) {
         }
 
         for (const guild of guildsDb) {
-            console.log(guild.id)
             guildIdsInDatabase.push(guild.id)
         }
 
