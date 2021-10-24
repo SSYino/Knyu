@@ -31,8 +31,10 @@ module.exports = async function (client, prisma) {
         for (const cachedGuildId of guildsInDiscordCache) {
             if (!guildIdsInDatabase.includes(cachedGuildId)) {
                 await prisma.guild.create({
-                    id: cachedGuildId,
-                    name: clientGuilds.get(cachedGuildId).name
+                    data: {
+                        id: cachedGuildId,
+                        name: clientGuilds.get(cachedGuildId).name
+                    }
                 })
             }
         }
