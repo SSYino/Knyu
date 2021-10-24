@@ -95,6 +95,7 @@ module.exports = (player) => {
     
     player.on("error", async (queue, error) => {
         
+        //This work around 80% of the time. If it fail it will just stop the music.
         if(typeof error.message !== 'undefined' && (error.message === "aborted" || error.message === "Status code: 403")) {
             console.error('Abort error!!', error);
             try {
@@ -108,7 +109,6 @@ module.exports = (player) => {
                 }
 
                 const _queueClone = {...queue};
-                console.log(_queueClone);
 
                 try {
                     await queue.destroy(true);  
