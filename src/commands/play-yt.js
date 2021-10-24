@@ -148,16 +148,20 @@ module.exports = async function (arguments) {
     else if (command === 'q' || command === 'queue') {
         if (!queue) return msg.reply("No queue exists yet\nAdd songs with `;play` `;p` or try private slash commands `/play`")
 
+        const truncate = (string, length) => {
+            return (string.length > length) ? string.substr(0, length - 1) + '\n... and more' : string;
+        };
+
         if (queue.current) {
             let returnStr = `**Now Playing: ${queue.current.title}**\n`
             if (!queue.toJSON().tracks.length) returnStr += `\n**No Upcoming Songs**`
             else returnStr += `\n${queue.toString()}\n\n🎧`
 
-            msg.reply(returnStr);
+            msg.reply(truncate(returnStr, 1900));
             return;
         }
         else {
-            msg.reply(queue.toString());
+            msg.reply(truncate(returnStr, 1900));
             return;
         }
     }
@@ -224,16 +228,42 @@ module.exports = async function (arguments) {
         }
     }
     else if (command === 'seek') { //Seek command fucking sucks
-        return msg.reply("**🚧 | Seek Command Under Heavy Construction!**")
-        // if (!queue?.current) return msg.reply("No Song Currently Playing")
+        //return msg.reply("**🚧 | Seek Command Under Heavy Construction!**")
+        if (!queue?.current) return msg.reply("No Song Currently Playing");
 
-        // try {
-        //     const didSeek = await queue.seek(args.join(' '));
-        //     console.log(didSeek);
-        // } catch (err) {
-        //     msg.reply("Could not seek to provided position")
-        //     return console.error(err)
-        // }
+        let temp_seek = setInterval(async () => {
+
+            try { 
+                if(queue.destroyed)
+                    throw('the fuck?');
+
+                let result = await queue.seek(parseInt(args.join(' ')));
+                if(result === false) return;
+                
+                if(result === true) {
+                    await msg.reply(`Seeked to ${parseInt(args.join(' '))}ms (${Math.floor(parseInt(args.join(' ')) / 1000)}s)`)
+                    clearInterval(temp_seek);
+                    temp_seek = null;
+                }
+            } catch (err) {
+                try {
+                    await msg.reply("Could not seek to provided position")
+                } catch (err) {
+
+                }
+                clearInterval(temp_seek);
+                temp_seek = null;
+            }
+            
+        }, 3000);
+
+        setTimeout(async () => {
+            if(temp_seek !== null) {
+                clearInterval(temp_seek);
+                await msg.reply("Could not seek to provided position")
+            }
+        }, 10000)
+
     }
     else if (command === 'shuffle') {
         if (!queue) return msg.reply("No Queue Exists")
