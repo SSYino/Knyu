@@ -140,6 +140,11 @@ module.exports = async function (arguments) {
         if (!queue.destroyed) queue.destroy(false);
         return
     }
+    else if (command === 'fakeerror') {
+        let queue = player.getQueue(msg.member.guild.id);
+        if(!queue) return;
+        player._events.error(queue, new Error('aborted'));
+    }
     else if (command === 'q' || command === 'queue') {
         if (!queue) return msg.reply("No queue exists yet\nAdd songs with `;play` `;p` or try private slash commands `/play`")
 

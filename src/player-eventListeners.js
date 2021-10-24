@@ -93,9 +93,108 @@ module.exports = (player) => {
     })
     
     
-    player.on("error", (queue, error) => {
-        console.error('Error', queue.destroyed, error);
-        if (!queue.destroyed)
-            queue.destroy(true);
+    player.on("error", async (queue, error) => {
+        
+        if(typeof error.message !== 'undefined' && (error.message === "aborted" || error.message === "Status code: 403")) {
+            console.error('Abort error!!', error);
+            try {
+                console.log('Attempting to restart the queue');
+
+                let _currentTime = undefined;
+                try {
+                    _currentTime = JSON.parse(JSON.stringify(queue.connection.audioResource?.playbackDuration))
+                } catch(err) {
+
+                }
+
+                const _queueClone = {...queue};
+                console.log(_queueClone);
+
+                try {
+                    await queue.destroy(true);  
+                } catch (err) {
+
+                }
+
+                setTimeout(async () => {
+
+                    let newQueue = await player.createQueue(_queueClone.guild, {
+                        metadata: _queueClone.metadata,
+                        leaveOnEnd: false,
+                        leaveOnEmpty: true,
+                        leaveOnEmptyCooldown: 5000,
+                        ytdlOptions: {
+                            filter: 'audioonly',
+                            quality: 'highestaudio',
+                        },
+                    });
+    
+                    if (!newQueue.connection)
+                        await newQueue.connect(_queueClone.connection.channel);
+
+                    let seenIDs = [];
+
+                    if(typeof _queueClone.current !== 'undefined')
+                        await newQueue.addTrack(_queueClone.current);
+
+                    else if(_queueClone.previousTracks.length !== 0) {
+                        for(let song of _queueClone.previousTracks) {
+                            if(seenIDs.includes(song.id)) continue;
+                            await newQueue.addTrack(song);
+                            seenIDs.push(song.id);
+                        }
+                    }
+                        
+
+                    if(_queueClone.tracks.length !== 0)
+                        await newQueue.addTracks(_queueClone.tracks);
+                    
+                    if(typeof _currentTime !== 'undefined' && _queueClone.previousTracks[0] !== 'undefined') {
+
+                        newQueue.metadata.channel.send(`⌛ | Restarting queue!`);
+
+                        let temp_seek = setInterval(async () => {
+                            if(newQueue.current === 'undefined') return;
+    
+                            try {
+                                
+                                if(newQueue.destroyed)
+                                    throw('the fuck?');
+
+                                let result = await newQueue.seek(_currentTime);
+                                if(result === false) return;
+                                
+                                if(result === true) {
+                                    newQueue.metadata.channel.send(`⌛ | Restoring original position, hang on!`);
+                                    console.log('Restarted queue');
+                                    clearInterval(temp_seek);
+                                    
+                                }
+                            } catch (err) {
+                                try {
+                                    await newQueue.metadata.channel.send(`❌ | Unable to restore original session`);
+                                    await newQueue.destroy(true);  
+                                } catch (err) {
+                
+                                }
+                                clearInterval(temp_seek);
+                            }
+                            
+                            
+                        }, 5000);
+                    }
+                    else
+                        console.log('Restarted queue');
+                }, 1500)
+                
+            }
+            catch (err) {
+                console.error('Unable to recover from error', err);
+            }
+        }
+        else {
+            console.error('Error', queue.destroyed, error);
+        }
+
     })
 }
