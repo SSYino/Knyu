@@ -235,7 +235,7 @@ module.exports = async function (arguments) {
 
             try { 
                 if(queue.destroyed)
-                    throw('the fuck?');
+                    throw new Error('the fuck?');
 
                 let result = await queue.seek(parseInt(args.join(' ')));
                 if(result === false) return;
