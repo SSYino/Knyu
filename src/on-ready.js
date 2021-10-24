@@ -6,13 +6,14 @@ module.exports = async function (client, prisma) {
     let guildData = [];
 
     if (!guildsDb.length) {
-        clientGuilds.forEach(guild => {
+
+        for (const guild of clientGuilds) {
             guildData.push({
                 id: guild.id,
                 name: guild.name
             })
-        })
-        
+        }
+
         await prisma.guild.createMany({
             data: guildData
         })
