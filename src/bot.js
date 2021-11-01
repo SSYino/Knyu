@@ -6,7 +6,8 @@ const onNickChange = require('./handle-nickname-change.js');
 const playerListener = require('./player-eventListeners.js');
 const { PrismaClient } = require('@prisma/client')
 const { Client, Intents, GuildMember } = require('discord.js');
-const { Player } = require("discord-player")
+const { Player } = require("discord-player");
+const { Attachment } = require("@discord-player/extractor");
 const prisma = new PrismaClient()
 const client = new Client({
     partials: ['MESSAGE', 'USER', 'GUILD_MEMBER', 'REACTION'],
