@@ -29,15 +29,26 @@ module.exports = async function (arguments) {
         try {
             if (!msg.member.voice.channelId) return await msg.reply("You are not in a voice channel!");
             if (msg.member.guild.me.voice.channelId && msg.member.voice.channelId !== msg.member.guild.me.voice.channelId) return await msg.reply("We are not in the same voice channel!");
+            
+            let query = args.join(' ');
+
             if (!args.length) {
                 if (queue?.setPaused()) {
                     queue.setPaused(false)
                     return msg.reply("Resumed Playing")
                 }
-                else return await msg.reply(`❌ | Please provide a track to play.`);
+                else {
+                    if(msg.attachments.size !== 0) {
+                        for(let attachment of msg.attachments) {        
+                            query = attachment[1].url;
+                        }
+                    }
+                    else
+                        return await msg.reply(`❌ | Please provide a track to play.`);
+                }
             }
 
-            let query = args.join(' ');
+            //let query = args.join(' ');
             let isPlaylist = false;
             let isTrackAcceptable = true;
 
