@@ -17,6 +17,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@discord-player/extractor": "^3.0.2",
     "@discordjs/opus": "^0.6.0",
     "@discordjs/voice": "^0.6.0",
     "@prisma/client": "^3.3.0",
