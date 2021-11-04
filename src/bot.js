@@ -23,7 +23,7 @@ client.on('ready', async () => {
     await startup(client, prisma)
     
     //Set Activity Status
-    client.user.setActivity('Porn', { type: 'STREAMING', url: 'https://youtu.be/aCgP8BFjrw4' })
+    client.user.setActivity('Porn', { type: 'STREAMING', url: 'https://www.youtube.com/watch?v=aCgP8BFjrw4&ab_channel=vector' })
     
     //Send Message To Channel
     // client.channels.cache.get("886996891865333811").send('Yeah fuck you Knyu');
