@@ -1,2 +1,0 @@
-PROBLEM: Bot loses activity after losing connection to discord
-Either make loop to set bot activity every 3 to 4 or so hours OR look for client event onReconnect to set bot activity then
