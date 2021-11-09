@@ -126,6 +126,7 @@ module.exports = (player) => {
                         ytdlOptions: {
                             filter: 'audioonly',
                             quality: 'highestaudio',
+                            highWaterMark: 15625 << 13 //128MB
                         },
                     });
     
