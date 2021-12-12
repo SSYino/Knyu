@@ -81,7 +81,8 @@ module.exports = async function (arguments) {
             // verify vc connection - ~750 ms
             try {
                 if (!queue.connection) await queue.connect(msg.member.voice.channel);
-            } catch {
+            } catch (err) {
+                console.error(err);
                 await msg.reply("Could not join your voice channel!");
                 try {
                     if (!queue.destroyed) queue.destroy();

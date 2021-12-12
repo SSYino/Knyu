@@ -34,5 +34,8 @@
   },
   "devDependencies": {
     "prisma": "^3.3.0"
+  },
+  "engines": {
+    "node": ">=16.7.0"
   }
 }
